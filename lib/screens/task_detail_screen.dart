@@ -41,15 +41,19 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
     setState(() => _isPosting = true);
-    final resp = await CommentService.createComment(task: widget.task, text: text);
+    final resp =
+        await CommentService.createComment(task: widget.task, text: text);
     setState(() => _isPosting = false);
     if (!mounted) return;
     if (resp.success) {
       _commentController.clear();
       _loadComments();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment added')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Comment added')));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(resp.error?.message ?? 'Failed to add comment'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(resp.error?.message ?? 'Failed to add comment'),
+          backgroundColor: Colors.red));
     }
   }
 
@@ -63,7 +67,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () async {
-              await Navigator.of(context).push(MaterialPageRoute(builder: (_) => AddEditTaskScreen(task: task)));
+              await Navigator.of(context).push(MaterialPageRoute(
+                  builder: (_) => AddEditTaskScreen(task: task)));
               // after edit, pop to home and we could refresh if needed. For now, simply reload comments.
               _loadComments();
             },
@@ -77,50 +82,75 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(task.title ?? 'Untitled', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+              Text(task.title ?? 'Untitled',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text(task.description ?? '', style: Theme.of(context).textTheme.bodyMedium),
+              Text(task.description ?? '',
+                  style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 12),
               Row(children: [
-                Chip(label: Text(task.status ?? (task.isCompleted ? 'Closed' : 'New'))),
+                Chip(
+                    label: Text(
+                        task.status ?? (task.isCompleted ? 'Closed' : 'New'))),
                 const SizedBox(width: 12),
-                if (task.startDate != null) Text('Start: ${task.startDate!.toLocal().toString().split(' ')[0]}'),
+                if (task.startDate != null)
+                  Text(
+                      'Start: ${task.startDate!.toLocal().toString().split(' ')[0]}'),
                 const SizedBox(width: 8),
-                if (task.endDate != null) Text('End: ${task.endDate!.toLocal().toString().split(' ')[0]}'),
+                if (task.endDate != null)
+                  Text(
+                      'End: ${task.endDate!.toLocal().toString().split(' ')[0]}'),
               ]),
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 8),
-              const Text('Discussion', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const Text('Discussion',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               for (final c in _comments) ...[
                 ListTile(
                   leading: const Icon(Icons.account_circle_outlined),
                   title: Text(c.text ?? ''),
-                  subtitle: Text(c.createdAt != null ? c.createdAt!.toLocal().toString() : ''),
+                  subtitle: Text(c.createdAt != null
+                      ? c.createdAt!.toLocal().toString()
+                      : ''),
                   trailing: FutureBuilder<ParseUser?>(
-                    future: ParseUser.currentUser() as Future<ParseUser?>,
+                    future: ParseUser.currentUser()
+                        .then((user) => user as ParseUser?),
                     builder: (context, snap) {
                       final current = snap.data;
-                      final isOwner = current != null && c.createdBy?.objectId == current.objectId;
+                      final isOwner = current != null &&
+                          c.createdBy?.objectId == current.objectId;
                       if (!isOwner) return const SizedBox.shrink();
                       return PopupMenuButton<String>(
                         onSelected: (v) async {
                           if (v == 'edit') {
-                            final controller = TextEditingController(text: c.text ?? '');
+                            final controller =
+                                TextEditingController(text: c.text ?? '');
                             final res = await showDialog<String?>(
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Edit comment'),
-                                content: TextField(controller: controller, maxLines: 3),
+                                content: TextField(
+                                    controller: controller, maxLines: 3),
                                 actions: [
-                                  TextButton(onPressed: () => Navigator.of(ctx).pop(null), child: const Text('Cancel')),
-                                  TextButton(onPressed: () => Navigator.of(ctx).pop(controller.text.trim()), child: const Text('Save')),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(ctx).pop(null),
+                                      child: const Text('Cancel')),
+                                  TextButton(
+                                      onPressed: () => Navigator.of(ctx)
+                                          .pop(controller.text.trim()),
+                                      child: const Text('Save')),
                                 ],
                               ),
                             );
                             if (res != null && res.isNotEmpty) {
-                              await CommentService.updateComment(comment: c, text: res);
+                              await CommentService.updateComment(
+                                  comment: c, text: res);
                               _loadComments();
                             }
                           } else if (v == 'delete') {
@@ -128,10 +158,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               context: context,
                               builder: (ctx) => AlertDialog(
                                 title: const Text('Delete comment'),
-                                content: const Text('Are you sure you want to delete this comment?'),
+                                content: const Text(
+                                    'Are you sure you want to delete this comment?'),
                                 actions: [
-                                  TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-                                  TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Delete')),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(ctx).pop(false),
+                                      child: const Text('Cancel')),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(ctx).pop(true),
+                                      child: const Text('Delete')),
                                 ],
                               ),
                             );
@@ -142,8 +179,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           }
                         },
                         itemBuilder: (ctx) => [
-                          const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                          const PopupMenuItem(
+                              value: 'edit', child: Text('Edit')),
+                          const PopupMenuItem(
+                              value: 'delete', child: Text('Delete')),
                         ],
                       );
                     },
@@ -157,7 +196,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   Expanded(
                     child: TextField(
                       controller: _commentController,
-                      decoration: const InputDecoration(hintText: 'Add a short update...'),
+                      decoration: const InputDecoration(
+                          hintText: 'Add a short update...'),
                       maxLines: 3,
                     ),
                   ),
@@ -173,7 +213,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
                     : const Text('Post'),

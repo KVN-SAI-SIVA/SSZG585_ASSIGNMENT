@@ -12,8 +12,8 @@ class TaskService {
     DateTime? endDate,
     String? discussion,
   }) async {
-    final currentUser = await ParseUser.currentUser() as ParseUser?;
-    
+    final currentUser = (await ParseUser.currentUser()) as ParseUser?;
+
     if (currentUser == null) {
       final resp = ParseResponse();
       resp.success = false;
@@ -36,7 +36,9 @@ class TaskService {
 
     // If the task saved successfully and there's an initial discussion text,
     // create a TaskComment to seed the threaded discussion.
-    if (saveResp.success && discussion != null && discussion.trim().isNotEmpty) {
+    if (saveResp.success &&
+        discussion != null &&
+        discussion.trim().isNotEmpty) {
       try {
         await CommentService.createComment(task: task, text: discussion.trim());
       } catch (_) {
@@ -49,10 +51,10 @@ class TaskService {
 
   // Get all tasks for the current user
   static Future<List<Task>> getAllTasks({String? status}) async {
-    final currentUser = await ParseUser.currentUser() as ParseUser?;
-    
+    final currentUser = (await ParseUser.currentUser()) as ParseUser?;
+
     if (currentUser == null) {
-        return [];
+      return [];
     }
 
     final queryBuilder = QueryBuilder<Task>(Task())
@@ -106,8 +108,8 @@ class TaskService {
 
   // Search tasks by title
   static Future<List<Task>> searchTasks(String query) async {
-    final currentUser = await ParseUser.currentUser() as ParseUser?;
-    
+    final currentUser = (await ParseUser.currentUser()) as ParseUser?;
+
     if (currentUser == null) {
       return [];
     }

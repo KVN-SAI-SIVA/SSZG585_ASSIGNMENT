@@ -28,7 +28,9 @@ class AuthService {
         ..whereEqualTo('email', identifier);
 
       final queryResponse = await query.query();
-      if (queryResponse.success && queryResponse.results != null && queryResponse.results!.isNotEmpty) {
+      if (queryResponse.success &&
+          queryResponse.results != null &&
+          queryResponse.results!.isNotEmpty) {
         final found = queryResponse.results!.first as ParseUser;
         final username = found.get<String>('username');
         if (username != null && username.isNotEmpty) {
@@ -45,20 +47,21 @@ class AuthService {
 
   // Logout user
   static Future<ParseResponse> logoutUser() async {
-    final user = await ParseUser.currentUser() as ParseUser?;
+    final user = (await ParseUser.currentUser()) as ParseUser?;
     if (user != null) {
       return await user.logout();
     }
     final resp = ParseResponse();
     resp.success = false;
     resp.statusCode = 400;
-    resp.error = ParseError(message: 'No user is currently logged in', code: 400);
+    resp.error =
+        ParseError(message: 'No user is currently logged in', code: 400);
     return resp;
   }
 
   // Get current user
   static Future<ParseUser?> getCurrentUser() async {
-    return await ParseUser.currentUser() as ParseUser?;
+    return (await ParseUser.currentUser()) as ParseUser?;
   }
 
   // Check if user is logged in
